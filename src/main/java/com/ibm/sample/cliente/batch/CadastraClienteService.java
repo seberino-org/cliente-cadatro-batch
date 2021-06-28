@@ -15,14 +15,20 @@ public class CadastraClienteService {
 	@Value("${cliente-rest.url}")
 	private String urlClienteRest; 
 	
-	@Value("${cliente-kafka-topico}")
-	private String cadastroTopic; 
-	
-	@KafkaListener(topics = "clientes")
+	@KafkaListener(topics = "${cliente-kafka-topico}")
 	public void cadastraCliente(Cliente cliente)
 	{
 		RestTemplate clienteRest = new RestTemplate();
 		RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,cliente, RetornoCliente.class);
-		//System.out.println("Resultado " + retorno.getMensagem());
+		System.out.println("Resultado " + retorno.getMensagem());
 	}
+	
+	@KafkaListener(topics = "${delete-cliente-kafka-topico}")
+	public void excluiCliente(Cliente cliente)
+	{
+		RestTemplate clienteRest = new RestTemplate();
+		clienteRest.delete(urlClienteRest + "/" + cliente.getCpf());
+		System.out.println("Resultado ");
+	}
+	
 }
