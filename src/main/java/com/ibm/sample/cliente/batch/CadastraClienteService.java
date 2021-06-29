@@ -18,17 +18,40 @@ public class CadastraClienteService {
 	@KafkaListener(topics = "${cliente-kafka-topico}")
 	public void cadastraCliente(Cliente cliente)
 	{
-		RestTemplate clienteRest = new RestTemplate();
-		RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,cliente, RetornoCliente.class);
-		System.out.println("Resultado " + retorno.getMensagem());
+		if (cliente==null || cliente.getCpf()==0L) //health check
+		{
+			return;
+		}
+		try
+		{
+			RestTemplate clienteRest = new RestTemplate();
+			RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,cliente, RetornoCliente.class);
+			//System.out.println("Resultado " + retorno.getMensagem());
+		}
+		catch (Exception e)
+		{
+			System.out.println("Problemas no registro do cliente: " + e.getMessage());
+		}
 	}
 	
 	@KafkaListener(topics = "${delete-cliente-kafka-topico}")
 	public void excluiCliente(Cliente cliente)
 	{
-		RestTemplate clienteRest = new RestTemplate();
-		clienteRest.delete(urlClienteRest + "/" + cliente.getCpf());
-		System.out.println("Resultado ");
+		if (cliente==null || cliente.getCpf()==0L) //health check
+		{
+			return;
+		}
+		try
+		{
+			RestTemplate clienteRest = new RestTemplate();
+			clienteRest.delete(urlClienteRest + "/" + cliente.getCpf());
+			//System.out.println("Resultado ");
+			
+		}
+		catch (Exception e)
+		{
+			System.out.println("Problemas na exclusao do registro do cliente: " + e.getMessage());
+		}
 	}
 	
 }
