@@ -102,7 +102,7 @@ public class Kafka implements HealthIndicator {
 			ConsumerRecords<String, Cliente> records = kafka.poll(100);
 			for (ConsumerRecord<String, Cliente> record: records)
 			{
-				record.value();
+				record.offset();
 				
 			}
 			kafka.commitSync();
