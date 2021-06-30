@@ -91,6 +91,7 @@ public class Kafka implements HealthIndicator {
 				prop.setProperty("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
 				prop.setProperty("value.deserializer","org.springframework.kafka.support.serializer.JsonDeserializer");
 				prop.setProperty("group.id", "HealthCheck");
+				prop.setProperty("json.trusted.packages", "*");
 				kafka = new KafkaConsumer<>(prop);
 			}
 
