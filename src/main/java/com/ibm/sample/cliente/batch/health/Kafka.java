@@ -3,6 +3,7 @@ package com.ibm.sample.cliente.batch.health;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -99,6 +100,12 @@ public class Kafka implements HealthIndicator {
 			topicos.add(this.topicoDelete);
 			kafka.subscribe(topicos);
 			ConsumerRecords<String, Cliente> records = kafka.poll(100);
+			for (ConsumerRecord<String, Cliente> record: records)
+			{
+				record.value();
+				
+			}
+			kafka.commitSync();
 			
 	
 		}
