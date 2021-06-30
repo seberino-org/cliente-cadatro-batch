@@ -1,7 +1,10 @@
 package com.ibm.sample.cliente.batch.health;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -55,7 +58,7 @@ public class Kafka implements HealthIndicator {
 	@Value("${spring.kafka.properties.sasl.jaas.config}")
 	private String jaasConfig;
 	
-	KafkaProducer<String, Cliente> kafka;
+	KafkaConsumer<String, Cliente> kafka;
 	
 	private Cliente cliente = new Cliente();
 	
@@ -84,26 +87,18 @@ public class Kafka implements HealthIndicator {
 				prop.setProperty("ssl.truststore.password",trustStorePassword);
 				prop.setProperty("ssl.truststore.type",trustStoreType);
 				prop.setProperty("value.serializer",valuese);
-				//prop.setProperty("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
-				//prop.setProperty("value.deserializer","org.springframework.kafka.support.serializer.JsonDeserializer");
-				//prop.setProperty("group.id", "HealthCheck");
-				kafka = new KafkaProducer<>(prop);
+				prop.setProperty("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
+				prop.setProperty("value.deserializer","org.springframework.kafka.support.serializer.JsonDeserializer");
+				prop.setProperty("group.id", "HealthCheck");
+				kafka = new KafkaConsumer<>(prop);
 			}
-			String topico = topicoCadastro;
-			ProducerRecord<String, Cliente> record = new ProducerRecord(topico,0+"",cliente);
-			RecordMetadata resultado = kafka.send(record).get();
-			if (resultado.offset()<0)
-			{
-				throw new Exception ("Falha ao enviar mensagem para o topico " + topico);
-			}
-			topico = topicoDelete;
-			record = new ProducerRecord(topico,0+"",cliente);
-			resultado = kafka.send(record).get();
-			if (resultado.offset()<0)
-			{
-				throw new Exception ("Falha ao enviar mensagem para o topico " + topico);
-			}
-			//kafka.close();
+
+			
+			ArrayList<String> topicos = new ArrayList<>();
+			topicos.add(this.topicoCadastro);
+			topicos.add(this.topicoDelete);
+			kafka.subscribe(topicos);
+			ConsumerRecords<String, Cliente> records = kafka.poll(100);
 			
 	
 		}

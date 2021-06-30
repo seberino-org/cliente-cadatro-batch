@@ -34,7 +34,7 @@ public class CadastraClienteService {
 		}
 	}
 	
-	@KafkaListener(topics = "${delete-cliente-kafka-topico}")
+	@KafkaListener(topics = "${delete-cliente-kafka-topico}", groupId = "Delete-Cliente")
 	public void excluiCliente(Cliente cliente)
 	{
 		if (cliente==null || cliente.getCpf()==0L) //health check
