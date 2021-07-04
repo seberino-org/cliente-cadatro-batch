@@ -6,14 +6,12 @@ import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.kafka.core.KafkaTemplate;
+
 import org.springframework.stereotype.Component;
 
 import com.ibm.sample.cliente.bff.dto.Cliente;
@@ -22,6 +20,7 @@ import com.ibm.sample.cliente.bff.dto.Cliente;
 public class Kafka implements HealthIndicator {
 
 	
+	Logger logger = LoggerFactory.getLogger(Kafka.class);
 	@Value("${cliente-kafka-topico}")
 	private String topicoCadastro; 
 	
@@ -65,12 +64,14 @@ public class Kafka implements HealthIndicator {
 	
 	@Override
 	public Health health() {
-		int errorCode = 0;
+
+		logger.debug("[health] Kafka");
 		try
 		{
+			logger.debug("Verifica se existe conexao ativa com o Kafka");
 			if (kafka ==null)
 			{
-				
+				logger.debug("Populando as propriedades para se conectar ao kafka");
 				cliente.setCpf(0L);
 				cliente.setNome("CLIENTE SINTETICO - HEALTH CHECK");
 				cliente.setNumero(0);
@@ -92,29 +93,36 @@ public class Kafka implements HealthIndicator {
 				prop.setProperty("value.deserializer","org.springframework.kafka.support.serializer.JsonDeserializer");
 				prop.setProperty("group.id", "HealthCheck");
 				prop.setProperty("spring.json.trusted.packages", "*");
+				
 				kafka = new KafkaConsumer<>(prop);
+				logger.debug("Conexao com o Kafka estabelicida");
 			}
 
-			
+			logger.debug("Adicionando os topicos: " + this.topicoCadastro + " e " + this.topicoDelete + " na lista de topicos que serão ouvidos");
 			ArrayList<String> topicos = new ArrayList<>();
 			topicos.add(this.topicoCadastro);
 			topicos.add(this.topicoDelete);
 			kafka.subscribe(topicos);
+			logger.debug("Iniciando o Pool nos 2 topicos");
 			ConsumerRecords<String, Cliente> records = kafka.poll(100);
 			for (ConsumerRecord<String, Cliente> record: records)
 			{
+				if (logger.isTraceEnabled() && record.value()!=null)
+				{
+					logger.trace("Menagem lida pelo HealthCheck: " + record.value().toString());
+				}
+				
 				record.offset();
 				
 			}
+			logger.debug("Fazendo o commmit das mensagens lidas");
 			kafka.commitSync();
-			
+			logger.debug("Health Check finalziado, Kafka saudável");
 	
 		}
 		catch (Exception e)
 		{
-			errorCode=1;
-			e.printStackTrace();
-			//System.out.println("Kafka não esta saudável: " + e.getMessage());
+			logger.error("Falha ao validar a saúde do Kafka: " + e.getMessage(), e);
 			return Health.down().withDetail("Kafka Não saudável", e.getMessage()).build();
 			
 		}
