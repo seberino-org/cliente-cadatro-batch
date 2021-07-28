@@ -116,23 +116,6 @@ public class PropagacaoContexto {
         }
     }
 
-    private static class HttpHeaderInjectAdapter implements TextMap 
-    {
-        private final HttpHeaders headers;
 
-        HttpHeaderInjectAdapter(HttpHeaders headers) {
-            this.headers = headers;
-        }
-
-        @Override
-        public Iterator<Entry<String, String>> iterator() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void put(String key, String value) {
-            headers.set(key, value);
-        }
-    }
 
 }

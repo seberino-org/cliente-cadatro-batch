@@ -4,15 +4,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
 
+import java.net.URI;
+import java.util.HashMap;
+
+import com.ibm.sample.HttpHeaderInjectAdapter;
 import com.ibm.sample.PropagacaoContexto;
 import com.ibm.sample.cliente.batch.dto.RetornoCliente;
 import com.ibm.sample.cliente.bff.dto.Cliente;
@@ -45,7 +54,12 @@ public class CadastraClienteService extends PropagacaoContexto {
 			span.setTag("payload", cliente.toString());
 			RestTemplate clienteRest = new RestTemplate();
 			logger.debug("Vai chamar a RestAPI para solicitar a gravação do cliente na base de dados");
-			RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,cliente, RetornoCliente.class);
+			HttpHeaders headers = new HttpHeaders();
+			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(headers);
+			tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS,h1);
+			
+			HttpEntity<Cliente> entity = new HttpEntity<>(cliente, h1.getHeaders());
+			RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,entity, RetornoCliente.class);
 			logger.info("Retorno da solicitação de cadastro do cliente: " + retorno.getMensagem() + ", cliente: " + retorno.getCliente().toString());
 			//System.out.println("Resultado " + retorno.getMensagem());
 		}
@@ -73,9 +87,16 @@ public class CadastraClienteService extends PropagacaoContexto {
 		Span span = this.startConsumerSpan("consomeMensagemExclusaoCliente", headers, tracer);
 		try
 		{
+			HttpHeaders headers = new HttpHeaders();
+			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(headers);
+			tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS,h1);
+			
+			HttpEntity<String> entity = new HttpEntity<>( h1.getHeaders());
 			RestTemplate clienteRest = new RestTemplate();
 			logger.debug("Vai chamar a RestAPI para solicitar a exclusao do cliente na base de dados");
-			clienteRest.delete(urlClienteRest + "/" + cliente.getCpf());
+			URI url = new URI(urlClienteRest + "/" + cliente.getCpf());
+			clienteRest.exchange(url,HttpMethod.DELETE,entity,String.class);
+			//clienteRest.
 			logger.debug("Solicitacao de exclusao feita com sucesso para a ClienteRestAPI");
 			
 		}
