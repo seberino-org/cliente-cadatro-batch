@@ -57,7 +57,6 @@ public class CadastraClienteService extends PropagacaoContexto {
 			HttpHeaders httpHeaders = new HttpHeaders();
 			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(httpHeaders);
 			tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS,h1);
-			
 			HttpEntity<Cliente> entity = new HttpEntity<>(cliente, h1.getHeaders());
 			RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,entity, RetornoCliente.class);
 			logger.info("Retorno da solicitação de cadastro do cliente: " + retorno.getMensagem() + ", cliente: " + retorno.getCliente().toString());
