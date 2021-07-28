@@ -54,8 +54,8 @@ public class CadastraClienteService extends PropagacaoContexto {
 			span.setTag("payload", cliente.toString());
 			RestTemplate clienteRest = new RestTemplate();
 			logger.debug("Vai chamar a RestAPI para solicitar a gravação do cliente na base de dados");
-			HttpHeaders headers = new HttpHeaders();
-			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(headers);
+			HttpHeaders httpHeaders = new HttpHeaders();
+			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(httpHeaders);
 			tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS,h1);
 			
 			HttpEntity<Cliente> entity = new HttpEntity<>(cliente, h1.getHeaders());
@@ -87,8 +87,8 @@ public class CadastraClienteService extends PropagacaoContexto {
 		Span span = this.startConsumerSpan("consomeMensagemExclusaoCliente", headers, tracer);
 		try
 		{
-			HttpHeaders headers = new HttpHeaders();
-			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(headers);
+			HttpHeaders httpHeaders = new HttpHeaders();
+			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(httpHeaders);
 			tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS,h1);
 			
 			HttpEntity<String> entity = new HttpEntity<>( h1.getHeaders());
