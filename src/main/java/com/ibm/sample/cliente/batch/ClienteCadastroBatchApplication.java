@@ -9,8 +9,6 @@ import io.opentelemetry.api.trace.Tracer;
 @SpringBootApplication
 public class ClienteCadastroBatchApplication {
 
-	Tracer tracer =
-    GlobalOpenTelemetry.getTracer("cliente-cadastro-batch");
 
 	public static void main(String[] args) {
 		SpringApplication.run(ClienteCadastroBatchApplication.class, args);
