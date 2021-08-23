@@ -45,7 +45,7 @@ public Health health() {
 		logger.debug("Solictacao de cadastro efetuada com sucesso, aguardando 200ms para conclusao antes de seguir com o HealthCheck");
 		ponto=1;
 		//aguarda o processamento asincrino
-		Thread.sleep(200);
+		Thread.sleep(400);
 		logger.debug("Solicitando ao BFF a exclusao do cliente sintético que acabou de ser criado");
 		clienteRest.delete(urlClienteRest + "/" + cliente.getCpf());
 		logger.debug("Solicitação de exclusão do cliente sintético efetuada com sucesso");
