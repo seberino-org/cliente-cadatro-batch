@@ -43,7 +43,7 @@ public Health health() {
 			mensagem = "Falha na exclusão de um cliente: " + e.getMessage();
 		}
 		logger.error("Falha ao validar a saúde da restAPI ClienteRest, " + e.getMessage(), e);
-		return Health.down().withDetail("Cliente-BFF Não saudável", mensagem).build();
+		return Health.down().withDetail("Cliente-Rest Não saudável", mensagem).build();
 	}
 	
 }
