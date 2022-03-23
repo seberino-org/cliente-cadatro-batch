@@ -37,26 +37,26 @@ public class Kafka implements HealthIndicator {
 	@Value("${spring.kafka.producer.value-serializer}")
 	private String valuese;
 	
-	@Value("${spring.kafka.consumer.ssl.trust-store-password}")
-	private String trustStorePassword;
+	//@Value("${spring.kafka.consumer.ssl.trust-store-password}")
+	//private String trustStorePassword;
 	
-	@Value("${spring.kafka.consumer.ssl.trust-store-location}")
-	private String trustStoreLocation;
+	//@Value("${spring.kafka.consumer.ssl.trust-store-location}")
+	//private String trustStoreLocation;
 	
-	@Value("${spring.kafka.consumer.ssl.trust-store-type}")
-	private String trustStoreType;
+	//@Value("${spring.kafka.consumer.ssl.trust-store-type}")
+	//private String trustStoreType;
 	
-	@Value("${spring.kafka.consumer.security.protocol}")
-	private String securityProtocol;
+	//@Value("${spring.kafka.consumer.security.protocol}")
+	//private String securityProtocol;
 	
-	@Value("${spring.kafka.consumer.ssl.protocol}")
-	private String sslProtocol;
+	//@Value("${spring.kafka.consumer.ssl.protocol}")
+	//private String sslProtocol;
 	
-	@Value("${spring.kafka.properties.sasl.mechanism}")
-	private String saslMechanis;
+	//@Value("${spring.kafka.properties.sasl.mechanism}")
+	//private String saslMechanis;
 	
-	@Value("${spring.kafka.properties.sasl.jaas.config}")
-	private String jaasConfig;
+	//@Value("${spring.kafka.properties.sasl.jaas.config}")
+	//private String jaasConfig;
 	
 	KafkaConsumer<String, Cliente> kafka;
 	
@@ -68,10 +68,10 @@ public class Kafka implements HealthIndicator {
 		logger.debug("[health] Kafka");
 		try
 		{
-			logger.debug("Verifica se existe conexao ativa com o Kafka");
+			logger.debug("Verifying if exist a open connection with Kafka");
 			if (kafka ==null)
 			{
-				logger.debug("Populando as propriedades para se conectar ao kafka");
+				logger.debug("Setting the kafka connection properties");
 				cliente.setCpf(0L);
 				cliente.setNome("CLIENTE SINTETICO - HEALTH CHECK");
 				cliente.setNumero(0);
@@ -81,13 +81,13 @@ public class Kafka implements HealthIndicator {
 				prop.setProperty("acks","1");
 				prop.setProperty("bootstrap.servers",kafkaURL);
 				prop.setProperty("key.serializer",keyse);
-				prop.setProperty("sasl.jaas.config",jaasConfig);
-				prop.setProperty("sasl.mechanism",saslMechanis);
-				prop.setProperty("security.protocol",securityProtocol);
-				prop.setProperty("ssl.enabled.protocols",sslProtocol);
-				prop.setProperty("ssl.truststore.location",trustStoreLocation.substring(5));
-				prop.setProperty("ssl.truststore.password",trustStorePassword);
-				prop.setProperty("ssl.truststore.type",trustStoreType);
+				//prop.setProperty("sasl.jaas.config",jaasConfig);
+				//prop.setProperty("sasl.mechanism",saslMechanis);
+				//prop.setProperty("security.protocol",securityProtocol);
+				//prop.setProperty("ssl.enabled.protocols",sslProtocol);
+				//prop.setProperty("ssl.truststore.location",trustStoreLocation.substring(5));
+				//prop.setProperty("ssl.truststore.password",trustStorePassword);
+				//prop.setProperty("ssl.truststore.type",trustStoreType);
 				prop.setProperty("value.serializer",valuese);
 				prop.setProperty("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
 				prop.setProperty("value.deserializer","org.springframework.kafka.support.serializer.JsonDeserializer");
@@ -95,35 +95,35 @@ public class Kafka implements HealthIndicator {
 				prop.setProperty("spring.json.trusted.packages", "*");
 				
 				kafka = new KafkaConsumer<>(prop);
-				logger.debug("Conexao com o Kafka estabelicida");
+				logger.debug("Connected to Kafka");
 			}
 
-			logger.debug("Adicionando os topicos: " + this.topicoCadastro + " e " + this.topicoDelete + " na lista de topicos que serão ouvidos");
+			logger.debug("Adding topics: " + this.topicoCadastro + " and " + this.topicoDelete + " in the listening pool");
 			ArrayList<String> topicos = new ArrayList<>();
 			topicos.add(this.topicoCadastro);
 			topicos.add(this.topicoDelete);
 			kafka.subscribe(topicos);
-			logger.debug("Iniciando o Pool nos 2 topicos");
+			logger.debug("Starting Polling");
 			ConsumerRecords<String, Cliente> records = kafka.poll(100);
 			for (ConsumerRecord<String, Cliente> record: records)
 			{
 				if (logger.isTraceEnabled() && record.value()!=null)
 				{
-					logger.trace("Menagem lida pelo HealthCheck: " + record.value().toString());
+					logger.trace("Message consumed by HealthCheck: " + record.value().toString());
 				}
 				
 				record.offset();
 				
 			}
-			logger.debug("Fazendo o commmit das mensagens lidas");
+			logger.debug("Commit read messages");
 			kafka.commitSync();
-			logger.debug("Health Check finalziado, Kafka saudável");
+			logger.debug("Health Check finished, Kafka Health");
 	
 		}
 		catch (Exception e)
 		{
-			logger.error("Falha ao validar a saúde do Kafka: " + e.getMessage(), e);
-			return Health.down().withDetail("Kafka Não saudável", e.getMessage()).build();
+			logger.error("Error to validate Kafka Health: " + e.getMessage(), e);
+			return Health.down().withDetail("Kafka is not Health", e.getMessage()).build();
 			
 		}
 		return Health.up().build();

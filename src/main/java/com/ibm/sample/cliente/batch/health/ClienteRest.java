@@ -24,26 +24,21 @@ private Cliente cliente = new Cliente();
 @Override
 public Health health() {
 	logger.debug("[health] ClienteBFF");
-	int ponto=0;
 	try
 	{	
 
 		RestTemplate clienteRest = new RestTemplate();
-		logger.debug("vai enviar o cliente sintetico ao BFF para cadastro");
+		logger.debug("It will test a customer search using the RestAPI");
 		clienteRest.getForObject(urlClienteRest + "/17956462843", RetornoCliente.class);
 
-		logger.debug("RestAPI ClienteRest Saudável!");
+		logger.debug("RestAPI ClientRest Health!");
 		return Health.up().build();
 	}
 	catch (Exception e)
 	{
-		String mensagem = "Falha na inclusão de novos clientes: " + e.getMessage();
-		if (ponto >1)
-		{
-			mensagem = "Falha na exclusão de um cliente: " + e.getMessage();
-		}
-		logger.error("Falha ao validar a saúde da restAPI ClienteRest, " + e.getMessage(), e);
-		return Health.down().withDetail("Cliente-Rest Não saudável", mensagem).build();
+		String mensagem = "Error to invoke a search in the RestAPI: " + e.getMessage();
+		logger.error(mensagem, e);
+		return Health.down().withDetail("Cliente-Rest is not Health", mensagem).build();
 	}
 	
 }

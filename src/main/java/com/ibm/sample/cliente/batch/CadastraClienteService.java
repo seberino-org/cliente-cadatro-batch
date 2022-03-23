@@ -45,7 +45,7 @@ public class CadastraClienteService extends PropagacaoContexto {
 		
 		if (cliente==null || cliente.getCpf()==0L) //health check
 		{
-			logger.debug("CPF 0, solicitação sintética feita pelo Health Check de cadatro de cliente, por tanto será descartada ");
+			logger.debug("CPF 0, sintect transaction, it will be ignored! ");
 			return;
 		}
 		Span span = this.startConsumerSpan("consomeMensagemCadastroCliente", headers, tracer);
@@ -53,20 +53,20 @@ public class CadastraClienteService extends PropagacaoContexto {
 		{
 			span.setTag("payload", cliente.toString());
 			RestTemplate clienteRest = new RestTemplate();
-			logger.debug("Vai chamar a RestAPI para solicitar a gravação do cliente na base de dados");
+			logger.debug("Invoking Rest API to store the customer data in the database");
 			HttpHeaders httpHeaders = new HttpHeaders();
 			HttpHeaderInjectAdapter h1 = new HttpHeaderInjectAdapter(httpHeaders);
 			tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS,h1);
 			HttpEntity<Cliente> entity = new HttpEntity<>(cliente, h1.getHeaders());
 			RetornoCliente retorno = clienteRest.postForObject(urlClienteRest,entity, RetornoCliente.class);
-			logger.info("Retorno da solicitação de cadastro do cliente: " + retorno.getMensagem() + ", cliente: " + retorno.getCliente().toString());
+			logger.info("Customer Record return by API: " + retorno.getMensagem() + ", Customer: " + retorno.getCliente().toString());
 			//System.out.println("Resultado " + retorno.getMensagem());
 		}
 		catch (Exception e)
 		{
 			span.log("Error: " + e.getMessage() );
 			span.setTag("error",true);
-			logger.error("Falha ao gravar os dados desse cliente: " + cliente.toString() + ", erro: " + e.getMessage(), e);
+			logger.error("Error to save the customer: " + cliente.toString() + ", error: " + e.getMessage(), e);
 		}
 		finally{
 			span.finish();
@@ -80,7 +80,7 @@ public class CadastraClienteService extends PropagacaoContexto {
 		
 		if (cliente==null || cliente.getCpf()==0L) //health check
 		{
-			logger.debug("CPF 0, solicitação sintética feita pelo Health Check de exclusao de cliente, por tanto será descartada ");
+			logger.debug("CPF 0, sintect transaction, it will be ignored!");
 			return;
 		}
 		Span span = this.startConsumerSpan("consomeMensagemExclusaoCliente", headers, tracer);
@@ -92,18 +92,18 @@ public class CadastraClienteService extends PropagacaoContexto {
 			
 			HttpEntity<String> entity = new HttpEntity<>( h1.getHeaders());
 			RestTemplate clienteRest = new RestTemplate();
-			logger.debug("Vai chamar a RestAPI para solicitar a exclusao do cliente na base de dados");
+			logger.debug("Invoking Rest API to delete the customer");
 			URI url = new URI(urlClienteRest + "/" + cliente.getCpf());
 			clienteRest.exchange(url,HttpMethod.DELETE,entity,String.class);
 			//clienteRest.
-			logger.debug("Solicitacao de exclusao feita com sucesso para a ClienteRestAPI");
+			logger.debug("Customer deleted sucessfully! customer: " + cliente.toString());
 			
 		}
 		catch (Exception e)
 		{
 			span.log("Error: " + e.getMessage() );
 			span.setTag("error",true);
-			logger.error("Falha ao solicitar a exclusao dos dados desse cliente: " + cliente.toString() +", erro: " + e.getMessage() ,e);
+			logger.error("Error to delete customer: " + cliente.toString() +", error: " + e.getMessage() ,e);
 		}
 		finally {
 			span.finish();
